@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">Tạo Đợt Kiểm Kê Mới</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Thông tin đợt kiểm kê -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Mã kiểm kê *</label>
+                                    <input type="text" class="form-control" name="ma_kiem_ke" 
+                                           placeholder="Nhập mã kiểm kê" required>
+                                    <small class="text-muted">Mã duy nhất để nhận diện đợt kiểm kê</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Ngày kiểm kê *</label>
+                                    <input type="datetime-local" class="form-control" name="ngay_kiem_ke" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tên đợt kiểm kê *</label>
+                            <input type="text" class="form-control" name="ten_dot_kiem_ke" 
+                                   placeholder="Nhập tên đợt kiểm kê" required>
+                        </div>
+
+                        <!-- Kho kiểm kê * -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kho kiểm kê *</label>
+                            
+                            {% if danh_sach_kho %}
+                                <div class="list-group">
+                                    {% for kho in danh_sach_kho %}
+                                    <label class="list-group-item list-group-item-action d-flex align-items-center">
+                                        <input class="form-check-input me-3" 
+                                               type="radio" 
+                                               name="kho" 
+                                               value="{{ kho.id }}"
+                                               {% if forloop.first %}checked{% endif %}
+                                               required>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold">
+                                                <i class="fas fa-warehouse me-2 text-primary"></i>
+                                                {{ kho.ten_kho }}
+                                            </div>
+                                            {% if kho.dia_chi %}
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                {{ kho.dia_chi }}
+                                            </small>
+                                            {% endif %}
+                                            {% if kho.dien_thoai %}
+                                            <small class="text-muted ms-2">
+                                                <i class="fas fa-phone me-1"></i>
+                                                {{ kho.dien_thoai }}
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Chưa có kho nào được tạo. 
+                                    <a href="{% url 'inventory:tao_kho' %}" class="alert-link">Tạo kho mới</a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả</label>
+                            <textarea class="form-control" name="mo_ta" rows="3" 
+                                      placeholder="Nhập mô tả cho đợt kiểm kê"></textarea>
+                        </div>
+
+                        <!-- Người phụ trách -->
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <label class="form-label fw-bold">Người phụ trách</label>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                     style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">Tự động lấy thông tin người đăng nhập</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Tạo Đợt Kiểm Kê
+                            </button>
+                            <a href="{% url 'inventory:danh_sach_kiem_ke' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd;
+}
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+.list-group-item {
+    border: 1px solid #dee2e6;
+    margin-bottom: 5px;
+    border-radius: 8px;
+}
+</style>
+{% endblock %}

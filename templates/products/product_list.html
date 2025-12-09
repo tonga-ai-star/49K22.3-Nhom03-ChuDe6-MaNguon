@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Sản phẩm - Warehouse Management{% endblock %}
+{% block page_title %}Quản lý sản phẩm{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Danh sách sản phẩm</h5>
+        <a href="{% url 'product_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> Thêm sản phẩm
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã SP</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Giá nhập</th>
+                        <th>Giá bán</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center" width="100">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.ma_san_pham }}</td>
+                        <td>{{ product.ten_san_pham }}</td>
+                        <td>{{ product.danh_muc.ten_danh_muc }}</td>
+                        <td>{{ product.gia_nhap|floatformat:0 }}đ</td>
+                        <td>{{ product.gia_ban|floatformat:0 }}đ</td>
+                        <td>{{ product.ton_kho }}</td>
+                        <td>
+                            {% if product.trang_thai %}
+                                <span class="badge bg-success">Đang bán</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Ngừng bán</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'product_edit' product.id %}"
+                                   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center action-btn"
+                                   data-bs-toggle="tooltip" title="Sửa sản phẩm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'product_delete' product.id %}"
+                                   class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center action-btn"
+                                   data-bs-toggle="tooltip" title="Xóa sản phẩm"
+                                   onclick="return confirm('Xóa sản phẩm {{ product.ten_san_pham }}?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Chưa có sản phẩm nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.action-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 0.375rem !important;
+    border-width: 1px !important;
+}
+
+.btn-outline-warning {
+    color: #f6c23e;
+    border-color: #f6c23e;
+}
+
+.btn-outline-warning:hover {
+    background-color: #f6c23e;
+    color: #000;
+}
+
+.btn-outline-danger {
+    color: #e74a3b;
+    border-color: #e74a3b;
+}
+
+.btn-outline-danger:hover {
+    background-color: #e74a3b;
+    color: white;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .action-btn {
+        width: 32px !important;
+        height: 32px !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

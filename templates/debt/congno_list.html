@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh sách Công nợ{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">Danh sách Công nợ</h4>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="mb-3">
+                <a href="{% url 'debt:congno_create' %}" class="btn btn-primary">+ Thêm công nợ</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Nhà cung cấp</th>
+                            <th>Hàng hóa</th>
+                            <th>Loại</th>
+                            <th>Số tiền</th>
+                            <th>Còn nợ</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for congno in cong_no_list %}
+                        <tr>
+                            <td><strong>{{ congno.ma_cong_no }}</strong></td>
+                            <td>{{ congno.nha_cung_cap.ten }}</td>
+                            <td>{{ congno.ten_hang_hoa }}</td>
+                            <td>
+                                {% if congno.loai_cong_no == 'phai_thu' %}
+                                <span class="badge bg-success">Phải thu</span>
+                                {% else %}
+                                <span class="badge bg-warning">Phải trả</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ congno.so_tien|floatformat:0 }} ₫</td>
+                            <td>
+                                {% if congno.so_tien_con_lai > 0 %}
+                                <span class="text-danger fw-bold">{{ congno.so_tien_con_lai|floatformat:0 }} ₫</span>
+                                {% else %}
+                                <span class="text-success">Đã trả</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ congno.ngay_tao|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'debt:congno_detail' congno.pk %}" class="btn btn-info btn-sm">
+                                    Xem
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">Không có công nợ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

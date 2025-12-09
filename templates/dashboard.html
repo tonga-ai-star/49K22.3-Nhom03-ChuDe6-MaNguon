@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}📊 Dashboard Quản lý Kho{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Bộ lọc tháng - ĐÃ SỬA -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <label for="month" class="col-form-label"><strong>Lọc theo tháng:</strong></label>
+                        </div>
+                        <div class="col-auto">
+                            <select name="month" id="month" class="form-select" onchange="this.form.submit()">
+                                <option value="">Tất cả các tháng</option>
+                                {% for month in months %}
+                                <option value="{{ month.value }}" {% if selected_month == month.value %}selected{% endif %}>
+                                    {{ month.label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-muted">Năm: {{ current_year }}</span>
+                        </div>
+                        <!-- Nút submit ẩn để form hoạt động -->
+                        <input type="submit" style="display: none;">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh - ĐÃ SỬA -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-uppercase mb-1">Tổng sản phẩm</div>
+                            <div class="h4">{{ total_products }}</div>
+                        </div>
+                        <i class="fas fa-boxes fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-uppercase mb-1">Nhà cung cấp</div>
+                            <div class="h4">{{ total_suppliers }}</div>
+                        </div>
+                        <i class="fas fa-truck fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-uppercase mb-1">Nhập tháng này</div>
+                            <div class="h4">{{ imports_this_month }}</div>
+                        </div>
+                        <i class="fas fa-arrow-down fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-uppercase mb-1">Xuất tháng này</div>
+                            <div class="h4">{{ exports_this_month }}</div>
+                        </div>
+                        <i class="fas fa-arrow-up fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHÂN TÍCH TỒN KHO - ĐÃ SỬA -->
+    <div class="row mb-4">
+        <!-- Top sản phẩm tồn kho -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">🏆 Sản phẩm tồn nhiều nhất</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for sp in top_stock_products %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ sp.san_pham__ten_san_pham|truncatechars:25 }}</h6>
+                                <small class="text-muted">Mã: {{ sp.san_pham__ma_san_pham|default:sp.san_pham__id }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary rounded-pill">{{ sp.tong_ton }} cái</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-box-open fa-2x mb-2"></i>
+                            <p>Chưa có dữ liệu tồn kho</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sản phẩm sắp hết hàng -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title mb-0">⚠️ Sản phẩm sắp hết</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock %}
+                    <div class="list-group list-group-flush">
+                        {% for sp in low_stock %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 {% if sp.so_luong_ton < 5 %}text-danger{% endif %}">
+                                    {{ sp.san_pham.ten_san_pham|truncatechars:25 }}
+                                </h6>
+                                <div>
+                                    <small class="text-muted">Tồn: {{ sp.so_luong_ton }}</small>
+                                    {% if sp.so_luong_toi_thieu %}
+                                    <small class="text-muted ms-2">Tối thiểu: {{ sp.so_luong_toi_thieu }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                {% if sp.so_luong_ton < 5 %}
+                                <span class="badge bg-danger rounded-pill mb-1">Hết sớm</span>
+                                {% else %}
+                                <span class="badge bg-warning rounded-pill mb-1">Cảnh báo</span>
+                                {% endif %}
+                                {% if sp.phan_tram_ton %}
+                                <div>
+                                    <small class="text-danger">{{ sp.phan_tram_ton }}% tồn kho</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5>Không có cảnh báo</h5>
+                        <p class="mb-0">Tất cả sản phẩm đều đủ tồn kho</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BIỂU ĐỒ VÀ THỐNG KÊ - ĐÃ SỬA -->
+    <div class="row">
+        <!-- Biểu đồ nhập kho theo tháng -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        📈 Biểu đồ nhập kho
+                        {% if selected_month %}
+                        - Tháng {{ selected_month }}
+                        {% else %}
+                        - Năm {{ current_year }}
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container-small">
+                        <canvas id="importChart" height="200"></canvas>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="text-center p-2 bg-light rounded">
+                                <div class="text-primary fw-bold">
+                                    {% if selected_month %}
+                                        {{ total_import_month|default:0 }}
+                                    {% else %}
+                                        {{ total_import_year|default:0 }}
+                                    {% endif %}
+                                     SP
+                                </div>
+                                <small>
+                                    {% if selected_month %}Tổng nhập tháng{% else %}Tổng nhập năm{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 bg-light rounded">
+                                <div class="text-success fw-bold">
+                                    {% if selected_month %}
+                                        {{ avg_import_day|floatformat:0 }}
+                                    {% else %}
+                                        {{ avg_import_month|floatformat:0 }}
+                                    {% endif %}
+                                     SP
+                                </div>
+                                <small>
+                                    {% if selected_month %}Trung bình/ngày{% else %}Trung bình/tháng{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thống kê tháng - ĐÃ SỬA -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        📊 Thống kê
+                        {% if selected_month %}
+                        tháng {{ selected_month }}
+                        {% else %}
+                        tháng {{ current_month }}
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-primary text-white rounded">
+                                    <div class="h4 mb-1">{{ imports_this_month }}</div>
+                                    <small>Phiếu nhập</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-success text-white rounded">
+                                    <div class="h4 mb-1">{{ exports_this_month }}</div>
+                                    <small>Phiếu xuất</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-warning text-white rounded">
+                                    <div class="h4 mb-1">{{ total_import_quantity|default:0 }}</div>
+                                    <small>SL nhập</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-secondary text-white rounded">
+                                    <div class="h4 mb-1">{{ total_export_quantity|default:0 }}</div>
+                                    <small>SL xuất</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="alert alert-light">
+                                <i class="fas fa-calculator me-2"></i>
+                                <small>Cân đối:
+                                    <span class="fw-bold {% if net_import > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ net_import|default:0 }} SP
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                        {% if selected_month %}
+                        <div class="mt-2">
+                            <div class="alert alert-light">
+                                <i class="fas fa-filter me-2"></i>
+                                <small>Đang lọc: <span class="fw-bold">Tháng {{ selected_month }}</span></small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript cho biểu đồ - ĐÃ SỬA -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Biểu đồ nhập kho theo tháng
+const importCtx = document.getElementById('importChart').getContext('2d');
+const importChart = new Chart(importCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels|safe }},
+        datasets: [
+            {
+                label: 'Số lượng nhập',
+                data: {{ import_data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: '#36a2eb',
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            title: {
+                display: true,
+                text: '{{ chart_title|safe }}',
+                font: {
+                    size: 14
+                }
+            },
+            legend: {
+                labels: {
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `Nhập: ${context.raw.toLocaleString('vi-VN')} SP`;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Số lượng (SP)'
+                },
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Fix form submit cho bộ lọc
+document.getElementById('month').addEventListener('change', function() {
+    this.form.submit();
+});
+</script>
+
+<style>
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.chart-container-small {
+    position: relative;
+    height: 250px;
+    min-height: 200px;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    font-weight: 600;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 1rem;
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.badge {
+    font-size: 0.75em;
+    padding: 0.4em 0.8em;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.alert-light {
+    background-color: rgba(248,249,250,0.5);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

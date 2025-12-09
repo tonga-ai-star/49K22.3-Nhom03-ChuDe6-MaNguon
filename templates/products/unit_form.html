@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - Warehouse{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">{{ title }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Tên đơn vị <span class="text-danger">*</span></label>
+                    {{ form.ten_don_vi }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mô tả</label>
+                    {{ form.mo_ta }}
+                </div>
+                <div class="mb-3 form-check">
+                    {{ form.trang_thai }}
+                    <label class="form-check-label">Hiển thị</label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Lưu</button>
+                    <a href="{% url 'unit_list' %}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,464 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Danh sách nhập kho{% endblock %}
+{% block page_title %}📥 Danh sách phiếu nhập kho{% endblock %}
+
+{% block content %}
+<div class="card table-custom h-100">
+    <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
+        <h5 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i>Phiếu nhập kho</h5>
+        <a href="{% url 'inventory:nhap_kho_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Tạo phiếu nhập
+        </a>
+    </div>
+    <div class="card-body d-flex flex-column p-0">
+        <!-- Bộ lọc và tìm kiếm -->
+        <div class="bg-light p-3 border-bottom">
+            <form method="GET" action="" class="row g-2 align-items-center">
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label small text-muted mb-1">Từ ngày</label>
+                    <input type="date" name="start_date" class="form-control form-control-sm"
+                           value="{{ start_date|default:'' }}">
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label small text-muted mb-1">Đến ngày</label>
+                    <input type="date" name="end_date" class="form-control form-control-sm"
+                           value="{{ end_date|default:'' }}">
+                </div>
+                <div class="col-md-4 col-sm-8">
+                    <label class="form-label small text-muted mb-1">Tìm kiếm</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control"
+                               value="{{ search_query|default:'' }}"
+                               placeholder="Mã phiếu, nhà cung cấp...">
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4">
+                    <button type="submit" class="btn btn-dark btn-sm w-100 mt-4">
+                        <i class="fas fa-filter me-1"></i>Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Thông báo tìm kiếm -->
+        {% if search_query or start_date or end_date %}
+        <div class="alert alert-info m-3 mb-2 py-2 d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-info-circle me-2"></i>
+                <span class="fw-bold">Đang lọc:</span>
+                {% if search_query %}<span class="badge bg-primary ms-2">{{ search_query }}</span>{% endif %}
+                {% if start_date %}<span class="badge bg-secondary ms-2">Từ: {{ start_date }}</span>{% endif %}
+                {% if end_date %}<span class="badge bg-secondary ms-2">Đến: {{ end_date }}</span>{% endif %}
+                <span class="badge bg-success ms-2">Số phiếu: {{ phieu_nhap|length }}</span>
+            </div>
+            <a href="{% url 'inventory:nhapkho_list' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-times me-1"></i>Xóa lọc
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Bảng danh sách phiếu nhập -->
+        <div class="table-responsive flex-grow-1">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Mã phiếu</th>
+                        <th>Ngày nhập</th>
+                        <th>Nhà cung cấp</th>
+                        <th class="text-center">Số SP</th>
+                        <th class="text-end pe-3">Tổng tiền</th>
+                        <th>Người lập</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center pe-3" width="180">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for phieu in phieu_nhap %}
+                    <tr>
+                        <td class="ps-3">
+                            <div class="fw-bold text-primary">{{ phieu.ma_phieu }}</div>
+                        </td>
+                        <td>
+                            <div>{{ phieu.ngay_nhap|date:"d/m/Y" }}</div>
+                            <small class="text-muted">{{ phieu.ngay_nhap|date:"H:i" }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ phieu.nha_cung_cap.ten_nha_cung_cap|truncatechars:20 }}</div>
+                            {% if phieu.nha_cung_cap.dien_thoai %}
+                            <small class="text-muted">
+                                <i class="fas fa-phone fa-xs me-1"></i>{{ phieu.nha_cung_cap.dien_thoai }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info">
+                                {{ phieu.chi_tiet_nhap.count }} SP
+                            </span>
+                        </td>
+                        <td class="text-end pe-3 fw-bold text-success">
+                            {{ phieu.tong_tien|floatformat:0|intcomma }}₫
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                                     style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <div class="small fw-bold">{{ phieu.nguoi_lap.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Hoàn thành
+                            </span>
+                        </td>
+                        <td class="text-center pe-3">
+                            <div class="d-flex justify-content-center gap-2">
+                                <!-- Nút Xem chi tiết -->
+                                <a href="{% url 'inventory:nhap_kho_detail' phieu.pk %}"
+                                   class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center action-btn"
+                                   data-bs-toggle="tooltip" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                <!-- Nút In phiếu -->
+                                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center action-btn"
+                                        onclick="printInvoice('{{ phieu.ma_phieu }}')"
+                                        data-bs-toggle="tooltip" title="In phiếu">
+                                    <i class="fas fa-print"></i>
+                                </button>
+
+                                <!-- Nút Xóa phiếu -->
+                                <form action="{% url 'inventory:xoa_phieu_nhap' phieu.pk %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center action-btn"
+                                            onclick="return confirmDelete('{{ phieu.ma_phieu }}')"
+                                            data-bs-toggle="tooltip" title="Xóa phiếu">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon mb-3">
+                                    <i class="fas fa-inbox fa-3x text-muted"></i>
+                                </div>
+                                <h4 class="text-muted mb-2">
+                                    {% if search_query or start_date or end_date %}
+                                    Không tìm thấy phiếu nhập
+                                    {% else %}
+                                    Chưa có phiếu nhập kho nào
+                                    {% endif %}
+                                </h4>
+                                <p class="text-muted mb-4">
+                                    {% if search_query or start_date or end_date %}
+                                    Không có kết quả phù hợp với điều kiện tìm kiếm
+                                    {% else %}
+                                    Hãy tạo phiếu nhập kho đầu tiên để quản lý hàng hóa
+                                    {% endif %}
+                                </p>
+                                {% if search_query or start_date or end_date %}
+                                <a href="{% url 'inventory:danh_sach_nhap' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Xóa bộ lọc
+                                </a>
+                                {% else %}
+                                <a href="{% url 'inventory:nhap_kho_create' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle me-2"></i>Tạo phiếu nhập đầu tiên
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phân trang -->
+        {% if is_paginated %}
+        <div class="card-footer bg-white border-top py-3">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Card styling */
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+}
+
+/* Table styling */
+.table {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.table thead th {
+    font-weight: 600;
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody td {
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Nút thao tác - KÍCH THƯỚC BẰNG NHAU */
+.action-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 0.375rem !important;
+    border-width: 1px !important;
+    transition: all 0.2s !important;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Màu sắc nút */
+.btn-outline-primary {
+    color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4e73df;
+    color: white;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-outline-danger {
+    color: #e74a3b;
+    border-color: #e74a3b;
+}
+
+.btn-outline-danger:hover {
+    background-color: #e74a3b;
+    color: white;
+}
+
+/* Khoảng cách giữa các nút */
+.gap-2 {
+    gap: 0.5rem;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+}
+
+/* Empty state */
+.empty-state {
+    padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+    opacity: 0.5;
+}
+
+/* Form controls */
+.form-control-sm {
+    font-size: 0.875rem;
+}
+
+/* Pagination */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    border: 1px solid #dee2e6;
+    color: #4e73df;
+    padding: 0.375rem 0.75rem;
+}
+
+.page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .action-btn {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    .table tbody td:nth-child(3), /* Nhà cung cấp */
+    .table tbody td:nth-child(6) { /* Người lập */
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .action-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.75rem;
+    }
+
+    .gap-2 {
+        gap: 0.25rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Kích hoạt tooltip Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Thiết lập ngày mặc định cho bộ lọc
+    const today = new Date().toISOString().split('T')[0];
+    const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+
+    const startDateInput = document.querySelector('input[name="start_date"]');
+    const endDateInput = document.querySelector('input[name="end_date"]');
+
+    if (startDateInput && !startDateInput.value) {
+        startDateInput.value = firstDayOfMonth;
+    }
+
+    if (endDateInput && !endDateInput.value) {
+        endDateInput.value = today;
+    }
+
+    // Thiết lập ngày tối đa cho end_date là hôm nay
+    if (endDateInput) {
+        endDateInput.max = today;
+    }
+});
+
+// Hàm xác nhận xóa
+function confirmDelete(maPhieu) {
+    return confirm(`Bạn có chắc chắn muốn xóa phiếu nhập "${maPhieu}"?\n\nLưu ý: Hành động này không thể hoàn tác!`);
+}
+
+// Hàm in phiếu
+function printInvoice(maPhieu) {
+    alert(`Chức năng in phiếu ${maPhieu} đang được phát triển.`);
+    // window.open(`/inventory/nhap-kho/${maPhieu}/print/`, '_blank');
+}
+</script>
+{% endblock %}

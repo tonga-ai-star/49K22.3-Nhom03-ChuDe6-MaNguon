@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}📤 Xuất kho nội bộ{% endblock %}
+{% block page_title %}📤 Xuất kho nội bộ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>Thông tin phiếu xuất
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="xuatKhoForm">
+                    {% csrf_token %}
+
+                    <!-- Kho xuất & Kho nhận -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Kho xuất <span class="text-danger">*</span></label>
+                            <select name="kho_xuat" class="form-control" required>
+                                <option value="">-- Chọn kho xuất --</option>
+                                {% for kho in kho_list %}
+                                <option value="{{ kho.id }}">{{ kho.ten_kho }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Kho nhận <span class="text-danger">*</span></label>
+                            <select name="kho_nhan" class="form-control" required>
+                                <option value="">-- Chọn kho nhận --</option>
+                                {% for kho in kho_list %}
+                                <option value="{{ kho.id }}">{{ kho.ten_kho }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ghi chú -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Ghi chú</label>
+                        <textarea name="ghi_chu" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <!-- Chi tiết sản phẩm -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold">
+                                <i class="fas fa-boxes me-2"></i>Chi tiết sản phẩm
+                            </h6>
+                            <button type="button" class="btn btn-success btn-sm" id="addProduct">
+                                <i class="fas fa-plus me-1"></i>Thêm sản phẩm
+                            </button>
+                        </div>
+
+                        <!-- Header của bảng -->
+                        <div class="row mb-2 fw-bold text-muted small">
+                            <div class="col-md-5">Sản phẩm <span class="text-danger">*</span></div>
+                            <div class="col-md-3">Danh mục</div>
+                            <div class="col-md-2">Đơn vị</div>
+                            <div class="col-md-1">Số lượng</div>
+                            <div class="col-md-1 text-center">Xóa</div>
+                        </div>
+
+                        <div id="productDetails">
+                            <div class="product-row row mb-3 align-items-center border-bottom pb-3">
+                                <div class="col-md-5">
+                                    <input type="text" name="ten_san_pham" class="form-control ten-san-pham"
+                                           placeholder="Nhập tên sản phẩm..." list="sanPhamList" required>
+                                    <datalist id="sanPhamList">
+                                        {% for sp in san_pham_list %}
+                                        <option value="{{ sp.ten_san_pham }}"
+                                                data-danhmuc="{{ sp.danh_muc.ten_danh_muc }}"
+                                                data-donvitinh="{{ sp.don_vi_tinh.ten_don_vi }}">
+                                        {% endfor %}
+                                    </datalist>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" name="danh_muc" class="form-control danh-muc-input" readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="text" name="don_vi_tinh" class="form-control don-vi-tinh-input" readonly>
+                                </div>
+                                <div class="col-md-1">
+                                    <input type="number" name="so_luong" class="form-control so-luong" min="1" required>
+                                </div>
+                                <div class="col-md-1 text-center">
+                                    <button type="button" class="btn btn-danger btn-sm remove-product" disabled title="Xóa dòng">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút hành động -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Lưu phiếu xuất
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>Làm mới
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addBtn = document.getElementById('addProduct');
+    const productDetails = document.getElementById('productDetails');
+
+    // Thêm dòng sản phẩm mới
+    addBtn.addEventListener('click', function() {
+        const newRow = document.querySelector('.product-row').cloneNode(true);
+        const inputs = newRow.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.removeAttribute('disabled');
+        });
+        newRow.querySelector('.remove-product').removeAttribute('disabled');
+        productDetails.appendChild(newRow);
+    });
+
+    // Xóa dòng sản phẩm
+    productDetails.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-product')) {
+            if (document.querySelectorAll('.product-row').length > 1) {
+                e.target.closest('.product-row').remove();
+            }
+        }
+    });
+
+    // Tự động điền thông tin khi chọn sản phẩm từ datalist
+    productDetails.addEventListener('input', function(e) {
+        if (e.target.classList.contains('ten-san-pham')) {
+            const productName = e.target.value;
+            const row = e.target.closest('.product-row');
+            const danhMucInput = row.querySelector('.danh-muc-input');
+            const donViTinhInput = row.querySelector('.don-vi-tinh-input');
+
+            if (productName) {
+                // Tìm sản phẩm trong datalist
+                const datalist = document.getElementById('sanPhamList');
+                const options = datalist.options;
+                let foundProduct = null;
+
+                for (let option of options) {
+                    if (option.value === productName) {
+                        foundProduct = option;
+                        break;
+                    }
+                }
+
+                if (foundProduct && foundProduct.dataset.id) {
+                    // Tự động điền danh mục, đơn vị tính
+                    const danhMuc = foundProduct.dataset.danhmuc;
+                    const donViTinh = foundProduct.dataset.donvitinh;
+
+                    if (danhMuc && !danhMucInput.value) {
+                        danhMucInput.value = danhMuc;
+                    }
+
+                    if (donViTinh && !donViTinhInput.value) {
+                        donViTinhInput.value = donViTinh;
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+.ten-san-pham:focus, .danh-muc-input:focus, .don-vi-tinh-input:focus, .so-luong:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+.product-row {
+    transition: all 0.3s ease;
+}
+.product-row:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px 0;
+}
+.remove-product {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.remove-product i {
+    font-size: 14px;
+}
+</style>
+{% endblock %}
+{{ block.super }}

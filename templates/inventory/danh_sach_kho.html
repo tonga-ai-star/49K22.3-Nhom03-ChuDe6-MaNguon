@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh sách kho{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Quản lý kho</h1>
+        <a href="{% url 'inventory:tao_kho' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Tạo kho mới
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Mã kho</th>
+                            <th>Tên kho</th>
+                            <th>Địa chỉ</th>
+                            <th>Điện thoại</th>
+                            <th>Người quản lý</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kho in danh_sach_kho %}
+                        <tr>
+                            <td><strong>{{ kho.ma_kho }}</strong></td>
+                            <td>{{ kho.ten_kho }}</td>
+                            <td>{{ kho.dia_chi }}</td>
+                            <td>{{ kho.dien_thoai|default:"-" }}</td>
+                            <td>{{ kho.nguoi_quan_ly.get_full_name|default:kho.nguoi_quan_ly.username }}</td>
+                            <td>
+                                <span class="badge {% if kho.trang_thai == 'dang_hoat_dong' %}bg-success{% elif kho.trang_thai == 'ngung_hoat_dong' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ kho.get_trang_thai_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'inventory:chi_tiet_ton_kho' kho.id %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-boxes"></i> Tồn kho
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Chưa có kho nào</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

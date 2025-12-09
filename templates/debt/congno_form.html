@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Tạo Công nợ{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Tạo Công nợ Mới</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Dòng 1: Phiếu nhập và Nhà cung cấp -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phiếu nhập *</label>
+                                    {{ form.phieu_nhap }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nhà cung cấp *</label>
+                                    {{ form.nha_cung_cap }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dòng 2: Mã công nợ và Loại công nợ -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Mã công nợ *</label>
+                                    {{ form.ma_cong_no }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Loại công nợ</label>
+                                    {{ form.loai_cong_no }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dòng 3: Tên hàng hóa -->
+                        <div class="mb-3">
+                            <label class="form-label">Tên hàng hóa</label>
+                            {{ form.ten_hang_hoa }}
+                        </div>
+
+                        <!-- Dòng 4: Số lượng và Đơn giá -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Số lượng *</label>
+                                    {{ form.so_luong }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Đơn giá (₫) *</label>
+                                    {{ form.don_gia }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dòng 5: Tổng công nợ (tự động tính) -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Tổng công nợ</label>
+                                    <input type="text" class="form-control bg-light fw-bold text-danger"
+                                           id="tong_cong_no" value="0 ₫" readonly>
+                                    <small class="text-muted">Tự động tính: Số lượng × Đơn giá</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút hành động -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'debt:congno_list' %}" class="btn btn-secondary me-md-2">Hủy</a>
+                            <button type="submit" class="btn btn-success">Tạo công nợ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript tính tổng công nợ tự động -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const soLuongInput = document.getElementById('{{ form.so_luong.id_for_label }}');
+    const donGiaInput = document.getElementById('{{ form.don_gia.id_for_label }}');
+    const tongCongNoInput = document.getElementById('tong_cong_no');
+
+    function calculateTotal() {
+        const soLuong = parseFloat(soLuongInput.value) || 0;
+        const donGia = parseFloat(donGiaInput.value) || 0;
+        const tongCongNo = soLuong * donGia;
+
+        tongCongNoInput.value = tongCongNo.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    soLuongInput.addEventListener('input', calculateTotal);
+    donGiaInput.addEventListener('input', calculateTotal);
+
+    // Tính toán lần đầu khi trang load
+    calculateTotal();
+});
+</script>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    border-radius: 10px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 1rem 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 1px solid #d1d3e2;
+    border-radius: 0.35rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn {
+    border-radius: 0.35rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e3e6f0;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}

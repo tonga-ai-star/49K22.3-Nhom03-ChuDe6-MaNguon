@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh mục - Warehouse{% endblock %}
+{% block page_title %}Danh mục sản phẩm{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Danh sách danh mục</h5>
+    <a href="{% url 'category_create' %}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus me-1"></i> Thêm danh mục
+    </a>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Tên danh mục</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in categories %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.ten_danh_muc }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

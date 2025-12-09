@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends 'settings_app/base.html' %}
+{% block content %}
+<h3>{% if create %}Thêm nhân viên{% else %}Sửa nhân viên{% endif %}</h3>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-primary" type="submit">Lưu</button>
+  <a class="btn btn-secondary" href="{% url 'settings:staff_list' %}">Hủy</a>
+</form>
+{% endblock %}
+
+</body>
+</html>

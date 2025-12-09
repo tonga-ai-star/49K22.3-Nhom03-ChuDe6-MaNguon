@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết Công nợ - {{ congno.ma_cong_no }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Chi tiết Công nợ: {{ congno.ma_cong_no }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nhà cung cấp:</strong> {{ congno.nha_cung_cap.ten }}</p>
+                            <p><strong>Mã công nợ:</strong> {{ congno.ma_cong_no }}</p>
+                            <p><strong>Loại:</strong>
+                                {% if congno.loai_cong_no == 'phai_thu' %}
+                                <span class="badge bg-success">Phải thu</span>
+                                {% else %}
+                                <span class="badge bg-warning">Phải trả</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Hàng hóa:</strong> {{ congno.ten_hang_hoa }}</p>
+                            <p><strong>Số lượng:</strong> {{ congno.so_luong }}</p>
+                            <p><strong>Đơn giá:</strong> {{ congno.don_gia|floatformat:0 }} ₫</p>
+                            <p><strong>Tổng tiền:</strong> {{ congno.so_tien|floatformat:0 }} ₫</p>
+                        </div>
+                    </div>
+
+                    <div class="alert {% if congno.so_tien_con_lai > 0 %}alert-warning{% else %}alert-success{% endif %} mt-3">
+                        <h5 class="mb-0">
+                            {% if congno.so_tien_con_lai > 0 %}
+                            Còn nợ: <span class="text-danger">{{ congno.so_tien_con_lai|floatformat:0 }} ₫</span>
+                            {% else %}
+                            ✅ Đã thanh toán toàn bộ
+                            {% endif %}
+                        </h5>
+                    </div>
+
+                    {% if congno.so_tien_con_lai > 0 %}
+                    <form method="post" action="{% url 'debt:thanh_toan' congno.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            💰 Thanh toán {{ congno.so_tien_con_lai|floatformat:0 }} ₫
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Lịch sử Thanh toán</h5>
+                </div>
+                <div class="card-body">
+                    {% if lich_su_thanh_toan %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Số tiền</th>
+                                    <th>Người thanh toán</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for thanh_toan in lich_su_thanh_toan %}
+                                <tr>
+                                    <td>{{ thanh_toan.ngay_thanh_toan|date:"d/m/Y H:i" }}</td>
+                                    <td class="text-success">{{ thanh_toan.so_tien|floatformat:0 }} ₫</td>
+                                    <td>{{ thanh_toan.nguoi_thanh_toan.username }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Chưa có thanh toán</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

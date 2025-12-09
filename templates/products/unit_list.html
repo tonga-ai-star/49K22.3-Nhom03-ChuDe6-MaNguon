@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Đơn vị tính - Warehouse{% endblock %}
+{% block page_title %}Đơn vị tính{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Danh sách đơn vị tính</h5>
+    <a href="{% url 'unit_create' %}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus me-1"></i> Thêm đơn vị
+    </a>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Tên đơn vị</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in units %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.ten_don_vi }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

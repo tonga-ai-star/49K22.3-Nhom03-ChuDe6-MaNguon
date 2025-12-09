@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h5>Bạn có chắc muốn xóa phiếu {{ phieu.ma_phieu }} ?</h5>
+    <form method="post">{% csrf_token %}
+      <button class="btn btn-danger" type="submit">Xóa</button>
+      <a href="{% url 'danh_sach_nhap' %}" class="btn btn-secondary">Hủy</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

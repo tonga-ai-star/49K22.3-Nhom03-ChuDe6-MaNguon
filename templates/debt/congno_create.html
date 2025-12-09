@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Tạo công nợ mới</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nhà cung cấp *</label>
+                                <select name="nha_cung_cap" class="form-control" required>
+                                    <option value="">Chọn nhà cung cấp</option>
+                                    {% for ncc in nha_cung_caps %}
+                                    <option value="{{ ncc.id }}">{{ ncc.ten }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mã công nợ *</label>
+                                <input type="text" name="ma_cong_no" class="form-control"
+                                       placeholder="VD: CN001" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Loại công nợ *</label>
+                                <select name="loai_cong_no" class="form-control" required>
+                                    <option value="phai_thu">Phải thu</option>
+                                    <option value="phai_tra">Phải trả</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hạn thanh toán</label>
+                                <input type="date" name="han_thanh_toan" class="form-control"
+                                       value="{{ default_han_thanh_toan }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên hàng hóa *</label>
+                        <input type="text" name="ten_hang_hoa" class="form-control"
+                               placeholder="Nhập tên hàng hóa" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Số lượng *</label>
+                                <input type="number" name="so_luong" class="form-control"
+                                       min="1" value="1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Đơn giá *</label>
+                                <input type="number" name="don_gia" class="form-control"
+                                       min="0" step="1000" placeholder="0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Tạo công nợ</button>
+                        <a href="{% url 'debt:congno_list' %}" class="btn btn-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

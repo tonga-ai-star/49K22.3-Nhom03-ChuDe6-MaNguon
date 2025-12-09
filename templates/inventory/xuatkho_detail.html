@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Chi tiết phiếu xuất nội bộ{% endblock %}
+{% block page_title %}📄 Chi tiết phiếu xuất {{ phieu_xuat.ma_phieu }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Thông tin phiếu xuất nội bộ</h5>
+        <div>
+            <a href="{% url 'inventory:xuatkho_list' %}" class="btn btn-light btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Thông tin phiếu xuất -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p><strong>Mã phiếu:</strong> <span class="text-primary">{{ phieu_xuat.ma_phieu }}</span></p>
+                <p><strong>Ngày xuất:</strong> {{ phieu_xuat.ngay_xuat|date:"d/m/Y H:i" }}</p>
+                <p><strong>Người lập:</strong> {{ phieu_xuat.nguoi_lap.username }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Kho xuất:</strong> {{ phieu_xuat.kho.ten_kho }}</p>
+                <p><strong>Kho nhận:</strong> {{ phieu_xuat.kho_nhan.ten_kho }}</p>
+                <p><strong>Ghi chú:</strong> {{ phieu_xuat.ghi_chu|default:"Không có" }}</p>
+            </div>
+        </div>
+
+        <!-- Chi tiết sản phẩm -->
+        <h5 class="mt-3 mb-3"><i class="fas fa-boxes me-2 text-success"></i>Chi tiết sản phẩm</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Sản phẩm</th>
+                        <th>Đơn vị</th>
+                        <th class="text-center">Số lượng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ct in chi_tiet_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ ct.san_pham.ten_san_pham }}</td>
+                        <td>{{ ct.san_pham.don_vi_tinh.ten_don_vi|default:"-" }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary rounded-pill px-3 py-2">{{ ct.so_luong }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-exchange-alt fa-2x mb-2 opacity-50"></i><br>
+                            Chưa có sản phẩm nào trong phiếu xuất này.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if chi_tiet_list %}
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Tổng số lượng:</strong></td>
+                        <td class="text-center">
+                            <strong>{{ chi_tiet_list|length }} sản phẩm</strong>
+                        </td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+
+        <!-- Nút hành động - ĐÃ ĐIỀU CHỈNH GIỐNG NHẬP KHO DETAIL -->
+        <div class="d-flex justify-content-end mt-4 gap-3">
+            <!-- Nút Quay lại -->
+            <a href="{% url 'inventory:xuatkho_list' %}"
+               class="btn btn-outline-secondary d-flex align-items-center justify-content-center action-btn-detail">
+                <i class="fas fa-arrow-left me-2"></i>
+                <span>Quay lại</span>
+            </a>
+
+            <!-- Nút In phiếu -->
+            <button class="btn btn-warning d-flex align-items-center justify-content-center action-btn-detail"
+                    onclick="window.print()">
+                <i class="fas fa-print me-2"></i>
+                <span>In phiếu</span>
+            </button>
+
+            <!-- Nút Xóa phiếu xuất -->
+            <form action="{% url 'inventory:xoa_phieu_xuat' phieu_xuat.id %}" method="post" class="d-inline m-0">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-danger d-flex align-items-center justify-content-center action-btn-detail"
+                        onclick="return confirmDeleteDetail()">
+                    <i class="fas fa-trash me-2"></i>
+                    <span>Xóa phiếu</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* CSS cho các nút hành động chi tiết - KÍCH THƯỚC BẰNG NHAU GIỐNG NHẬP KHO */
+.action-btn-detail {
+    min-width: 140px !important;
+    height: 42px !important;
+    padding: 0.5rem 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    border-width: 1px !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+/* Đảm bảo form không làm hỏng layout */
+form.d-inline.m-0 {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+}
+
+/* Màu sắc và hover effects - GIỐNG VỚI NHẬP KHO */
+.btn-outline-secondary {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2) !important;
+}
+
+.btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3) !important;
+    color: #000 !important;
+}
+
+.btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+}
+
+.btn-danger:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
+    color: white !important;
+}
+
+/* Khoảng cách giữa các nút */
+.gap-3 {
+    gap: 1rem !important;
+}
+
+/* Responsive cho mobile - GIỐNG VỚI NHẬP KHO */
+@media (max-width: 768px) {
+    .action-btn-detail {
+        min-width: 120px !important;
+        height: 38px !important;
+        padding: 0.375rem 0.75rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    .gap-3 {
+        gap: 0.75rem !important;
+    }
+
+    .action-btn-detail i {
+        margin-right: 0.5rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-end {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+    }
+
+    .action-btn-detail {
+        min-width: 100% !important;
+        width: 100% !important;
+        height: 40px !important;
+        justify-content: center !important;
+    }
+}
+
+/* CSS cho trang in */
+@media print {
+    .card-header, .btn, .navbar, .sidebar, footer,
+    .d-flex.justify-content-end.mt-4.gap-3 {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .card-body {
+        padding: 0 !important;
+    }
+
+    h5 {
+        color: #000 !important;
+    }
+}
+</style>
+
+<script>
+// Hàm xác nhận xóa chi tiết - GIỐNG NHẬP KHO
+function confirmDeleteDetail() {
+    const maPhieu = "{{ phieu_xuat.ma_phieu }}";
+    return confirm(`Bạn có chắc chắn muốn xóa phiếu xuất "${maPhieu}"?\n\n⚠️ Cảnh báo: Hành động này sẽ xóa tất cả sản phẩm trong phiếu và không thể hoàn tác!`);
+}
+</script>
+{% endblock %}

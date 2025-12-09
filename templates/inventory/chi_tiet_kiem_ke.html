@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết kiểm kê - {{ kiem_ke.ten_dot_kiem_ke }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Chi tiết kiểm kê: {{ kiem_ke.ten_dot_kiem_ke }}
+                    </h4>
+                    <span class="badge {% if kiem_ke.trang_thai == 'hoan_thanh' %}bg-success{% else %}bg-warning{% endif %} fs-6">
+                        {{ kiem_ke.get_trang_thai_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin đợt kiểm kê -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <strong class="d-block text-muted small">Mã kiểm kê</strong>
+                            <span class="fw-bold text-primary">{{ kiem_ke.ma_kiem_ke }}</span>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong class="d-block text-muted small">Kho kiểm kê</strong>
+                            <span class="fw-bold">
+                                <i class="fas fa-warehouse me-1"></i>
+                                {{ kiem_ke.kho.ten_kho }}
+                            </span>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong class="d-block text-muted small">Ngày kiểm kê</strong>
+                            <span class="fw-bold">{{ kiem_ke.ngay_kiem_ke|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong class="d-block text-muted small">Người phụ trách</strong>
+                            <span class="fw-bold">
+                                <i class="fas fa-user me-1"></i>
+                                {{ kiem_ke.nguoi_phu_trach.get_full_name|default:kiem_ke.nguoi_phu_trach.username }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if kiem_ke.mo_ta %}
+                    <div class="alert alert-info mb-4">
+                        <strong><i class="fas fa-info-circle me-2"></i>Mô tả:</strong>
+                        {{ kiem_ke.mo_ta }}
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Danh sách sản phẩm kiểm kê -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="5%" class="text-center">STT</th>
+                                        <th width="25%">Sản phẩm</th>
+                                        <th width="15%" class="text-center">Số lượng hệ thống</th>
+                                        <th width="15%" class="text-center">Số lượng thực tế</th>
+                                        <th width="15%" class="text-center">Chênh lệch</th>
+                                        <th width="25%">Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in chi_tiet_kiem_ke_list %}
+                                    <tr>
+                                        <td class="text-center align-middle">{{ forloop.counter }}</td>
+                                        <td class="align-middle">
+                                            <div class="fw-bold text-primary">{{ item.san_pham.ten_san_pham }}</div>
+                                            <small class="text-muted">
+                                                Mã: {{ item.san_pham.ma_san_pham }} |
+                                                ĐVT: {{ item.san_pham.don_vi_tinh }}
+                                            </small>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <span class="badge bg-secondary fs-6">{{ item.so_luong_he_thong }}</span>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <input type="number"
+                                                   name="so_luong_{{ item.san_pham.id }}"
+                                                   value="{{ item.so_luong_thuc_te }}"
+                                                   min="0"
+                                                   step="1"
+                                                   class="form-control text-center fw-bold"
+                                                   style="min-width: 100px;"
+                                                   required>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            {% if item.chenh_lech > 0 %}
+                                                <span class="badge bg-success fs-6">+{{ item.chenh_lech }}</span>
+                                            {% elif item.chenh_lech < 0 %}
+                                                <span class="badge bg-danger fs-6">{{ item.chenh_lech }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary fs-6">0</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="align-middle">
+                                            <input type="text"
+                                                   name="ghi_chu_{{ item.san_pham.id }}"
+                                                   value="{{ item.ghi_chu }}"
+                                                   class="form-control"
+                                                   placeholder="Nhập ghi chú...">
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                                <h5>Không có sản phẩm nào</h5>
+                                                <p>Không có sản phẩm nào trong kho để kiểm kê</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if chi_tiet_kiem_ke_list %}
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Lưu kết quả kiểm kê
+                            </button>
+                            <a href="{% url 'inventory:danh_sach_kiem_ke' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                            </a>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+.input-group-text {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

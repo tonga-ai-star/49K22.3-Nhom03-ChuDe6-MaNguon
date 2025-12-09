@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block page_title %}Cập nhật phiếu nhập{% endblock %}
+{% block content %}
+<div class="card shadow">
+  <div class="card-header">
+    <h5 class="mb-0">Cập nhật phiếu nhập {{ phieu.ma_phieu }}</h5>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="ghi_chu" class="form-control">{{ phieu.ghi_chu }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Trạng thái</label>
+      </div>
+      <button type="submit" class="btn btn-success">Lưu thay đổi</button>
+      <a href="{% url 'danh_sach_nhap' %}" class="btn btn-secondary">Quay lại</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

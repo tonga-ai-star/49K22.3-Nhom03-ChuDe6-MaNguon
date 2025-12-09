@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}NexStock{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">NexStock</a>
+    <div class="d-flex">
+      {% if user.is_authenticated %}
+      <div class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navUser" data-bs-toggle="dropdown">
+          {{ user.get_full_name|default:user.username }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navUser">
+          <li><a class="dropdown-item" href="{% url 'settings:profile' %}">Hồ sơ</a></li>
+          <li><a class="dropdown-item" href="{% url 'settings:staff_list' %}">Tài khoản nhân viên</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{% url 'settings:logout' %}">Đăng xuất</a></li>
+        </ul>
+      </div>
+      {% else %}
+      <a class="btn btn-outline-primary" href="{% url 'login' %}">Đăng nhập</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+<div class="container py-4">
+  {% if messages %}
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }} alert-dismissible fade show" role="alert">
+        {{ m }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% block content %}{% endblock %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

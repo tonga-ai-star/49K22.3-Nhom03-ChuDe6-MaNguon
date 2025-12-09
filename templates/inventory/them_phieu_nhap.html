@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block page_title %}Tạo phiếu nhập{% endblock %}
+{% block content %}
+<div class="card shadow">
+  <div class="card-header d-flex justify-content-between">
+    <h5>Tạo phiếu nhập</h5>
+    <a href="{% url 'danh_sach_nhap' %}" class="btn btn-secondary btn-sm">Quay lại</a>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row mb-3">
+        <div class="col-md-4">{{ form.ma_phieu.label_tag }}{{ form.ma_phieu }}</div>
+      </div>
+      <div class="mb-3">{{ form.ghi_chu.label_tag }}{{ form.ghi_chu }}</div>
+
+      <h6>Chi tiết</h6>
+      {{ formset.management_form }}
+      <table class="table">
+        <thead>
+          <tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for f in formset %}
+          <tr>
+            <td>{{ f.san_pham }}</td>
+            <td>{{ f.so_luong }}</td>
+            <td>{{ f.don_gia }}</td>
+            <td>
+              {% if f.instance.pk %}
+                {{ f.DELETE }} Xóa
+              {% else %}
+                {% if formset.can_delete %}{{ f.DELETE }} Xóa{% endif %}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <button class="btn btn-primary" type="submit">Lưu</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

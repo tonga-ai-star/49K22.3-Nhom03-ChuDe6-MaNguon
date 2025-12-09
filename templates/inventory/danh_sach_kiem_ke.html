@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Danh sách kiểm kê{% endblock %}
+{% block page_title %}📋 Danh sách kiểm kê{% endblock %}
+
+{% block content %}
+<div class="card table-custom h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Phiếu kiểm kê</h5>
+        <a href="{% url 'inventory:tao_kiem_ke' %}" class="btn btn-primary-custom">
+            <i class="fas fa-plus me-2"></i>Tạo kiểm kê mới
+        </a>
+    </div>
+    <div class="card-body d-flex flex-column">
+        <!-- Bộ lọc -->
+        <!-- Bộ lọc - ĐÃ SỬA -->
+            <div class="row mb-4">
+                <form method="GET" action="" class="row g-2 align-items-center">
+                    <div class="col-md-3">
+                        <input type="date" name="start_date" class="form-control" placeholder="Từ ngày"
+                               value="{{ request.GET.start_date|default:'' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" name="end_date" class="form-control" placeholder="Đến ngày"
+                               value="{{ request.GET.end_date|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="q" class="form-control" placeholder="Tìm theo mã kiểm kê, tên đợt..."
+                               value="{{ request.GET.q|default:'' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search me-1"></i>Lọc
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        <!-- Bảng danh sách kiểm kê -->
+        <div class="table-responsive flex-grow-1">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-white bg-dark">Mã kiểm kê</th>
+                        <th class="text-white bg-dark">Tên đợt kiểm kê</th>
+                        <th class="text-white bg-dark">Kho</th>
+                        <th class="text-white bg-dark">Ngày kiểm kê</th>
+                        <th class="text-white bg-dark">Trạng thái</th>
+                        <th class="text-white bg-dark">Người phụ trách</th>
+                        <th class="text-white bg-dark text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kiem_ke in danh_sach_kiem_ke %}
+                    <tr>
+                        <td><strong class="text-primary">{{ kiem_ke.ma_kiem_ke }}</strong></td>
+                        <td>{{ kiem_ke.ten_dot_kiem_ke }}</td>
+                        <td>
+                            {% if kiem_ke.kho and kiem_ke.kho.ten_kho %}
+                                <div class="fw-bold">{{ kiem_ke.kho.ten_kho }}</div>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ kiem_ke.ngay_kiem_ke|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge rounded-pill
+                                {% if kiem_ke.trang_thai == 'hoan_thanh' %}bg-success
+                                {% elif kiem_ke.trang_thai == 'dang_kiem' %}bg-warning
+                                {% else %}bg-secondary{% endif %}">
+                                <i class="fas
+                                    {% if kiem_ke.trang_thai == 'hoan_thanh' %}fa-check
+                                    {% elif kiem_ke.trang_thai == 'dang_kiem' %}fa-spinner
+                                    {% else %}fa-clock{% endif %} me-1"></i>
+                                {{ kiem_ke.get_trang_thai_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                     style="width: 30px; height: 30px;">
+                                    <i class="fas fa-user text-white small"></i>
+                                </div>
+                                <span>{{ kiem_ke.nguoi_phu_trach.get_full_name|default:kiem_ke.nguoi_phu_trach.username }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'inventory:chi_tiet_kiem_ke' kiem_ke.id %}"
+                                   class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center action-btn"
+                                   data-bs-toggle="tooltip" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary action-btn"
+                                        data-bs-toggle="tooltip" title="In phiếu">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                                {% if kiem_ke.trang_thai != 'hoan_thanh' %}
+                                <a href="{% url 'inventory:sua_kiem_ke' kiem_ke.id %}"
+                                   class="btn btn-sm btn-outline-warning action-btn"
+                                   data-bs-toggle="tooltip" title="Sửa kiểm kê">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted" style="height: 400px;">
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                                <i class="fas fa-clipboard-list fa-3x mb-3 opacity-50"></i>
+                                <h5>Chưa có đợt kiểm kê nào</h5>
+                                <p class="mb-3 text-center">Hãy tạo đợt kiểm kê đầu tiên để quản lý tồn kho</p>
+                                <a href="{% url 'inventory:tao_kiem_ke' %}" class="btn btn-primary-custom">
+                                    <i class="fas fa-plus me-2"></i>Tạo kiểm kê đầu tiên
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phân trang -->
+        {% if danh_sach_kiem_ke %}
+        <div class="mt-auto pt-3">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">Trước</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">Tiếp</a></li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* CSS để kéo dài bảng xuống hết trang */
+.table-custom {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.table-responsive {
+    flex: 1;
+    min-height: 0;
+}
+
+.table {
+    margin-bottom: 0 !important;
+}
+
+/* Đảm bảo tbody chiếm hết không gian */
+.table tbody {
+    height: 100%;
+}
+
+/* Header table với nền đen và chữ trắng */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background: #000000 !important;
+    color: #ffffff !important;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    padding: 12px 8px;
+}
+
+/* Đảm bảo chữ trắng cho tất cả thẻ th */
+.table thead th.text-white {
+    color: #ffffff !important;
+}
+
+/* Đảm bảo nền đen cho tất cả thẻ th */
+.table thead th.bg-dark {
+    background-color: #000000 !important;
+}
+
+/* Hover effect cho header */
+.table thead th:hover {
+    background: #333333 !important;
+}
+
+/* Nút thao tác */
+.action-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 0.375rem !important;
+}
+
+.btn-outline-primary {
+    color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4e73df;
+    color: white;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-outline-warning {
+    color: #f6c23e;
+    border-color: #f6c23e;
+}
+
+.btn-outline-warning:hover {
+    background-color: #f6c23e;
+    color: #000;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+/* Badge status styles */
+.badge.bg-success {
+    background: linear-gradient(45deg, #28a745, #20c997) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(45deg, #ffc107, #fd7e14) !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(45deg, #6c757d, #495057) !important;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .table-custom {
+        min-height: calc(100vh - 150px);
+    }
+
+    .action-btn {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .table thead th {
+        padding: 8px 4px;
+        font-size: 14px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

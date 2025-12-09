@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends 'base.html' %}
+{% block title %}Hồ sơ người dùng{% endblock %}
+
+{% block page_title %}Hồ sơ tài khoản{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin người dùng</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" class="img-thumbnail rounded-circle mb-3" width="150" height="150">
+                    {% else %}
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                             style="width:150px; height:150px; font-size:3rem;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                    <a href="{% url 'settings:profile' %}" class="btn btn-outline-primary mt-2">
+                        <i class="fas fa-edit me-1"></i>Chỉnh sửa hồ sơ
+                    </a>
+                </div>
+
+                <div class="col-md-9">
+                    <h5 class="fw-bold">{{ user.first_name }} {{ user.last_name }}</h5>
+                    <p><strong>Tên đăng nhập:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email|default:"Chưa có" }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ profile.phone|default:"Chưa có" }}</p>
+                    <p><strong>Địa chỉ:</strong> {{ profile.address|default:"Chưa có" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+</body>
+</html>

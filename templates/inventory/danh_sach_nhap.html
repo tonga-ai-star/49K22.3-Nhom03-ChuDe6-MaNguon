@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Danh sách nhập kho{% endblock %}
+{% block page_title %}Danh sách nhập kho{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header">
+        <h5 class="mb-0">Phiếu nhập kho</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Ngày</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in nhap_list %}
+                <tr>
+                    <td>{{ p.ma_phieu }}</td>
+                    <td>{{ p.ngay }}</td>
+                    <td>{{ p.nha_cung_cap }}</td>
+                    <td>{{ p.tong_tien|floatformat:0 }}đ</td>
+                    <td>
+                        <span class="badge bg-{% if p.trang_thai == 'Hoàn tất' %}success{% else %}warning{% endif %}">
+                            {{ p.trang_thai }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

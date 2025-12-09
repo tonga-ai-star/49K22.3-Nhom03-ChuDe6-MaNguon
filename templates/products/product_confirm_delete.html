@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Xóa sản phẩm</h5>
+    </div>
+    <div class="card-body">
+        <p>Bạn có chắc muốn xóa <strong>{{ product.ten_san_pham }}</strong> không?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Xóa</button>
+            <a href="{% url 'product_list' %}" class="btn btn-secondary">Hủy</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

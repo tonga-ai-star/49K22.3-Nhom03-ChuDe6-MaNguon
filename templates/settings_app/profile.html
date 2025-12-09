@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cài đặt tài khoản{% endblock %}
+
+{% block page_title %}Cài đặt tài khoản{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white fw-bold">
+            <i class="fas fa-user-cog me-2"></i> Thông tin người dùng
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-secondary mb-3">Thông tin tài khoản</h5>
+                        {{ uform.as_p }}
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-secondary mb-3">Thông tin cá nhân</h5>
+                        {{ pform.as_p }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom mt-3">
+                    <i class="fas fa-save me-2"></i> Lưu thay đổi
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+</body>
+</html>
