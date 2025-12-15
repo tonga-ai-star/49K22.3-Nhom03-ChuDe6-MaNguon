@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load static %}
 
@@ -13,21 +14,26 @@
         </a>
     </div>
     <div class="card-body d-flex flex-column">
-        <!-- Bộ lọc -->
-        <div class="row mb-4">
+        <!-- FORM TÌM KIẾM ĐƠN GIẢN -->
+        <form method="GET" action="" class="row mb-4">
             <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Tìm theo mã, tên nhà cung cấp...">
+                <input type="text"
+                       class="form-control"
+                       name="search"
+                       placeholder="Tìm theo mã, tên, SĐT, email..."
+                       value="{{ search_query|default:'' }}">
             </div>
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Tìm theo số điện thoại...">
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-primary w-100">
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
                     <i class="fas fa-search me-1"></i>Tìm kiếm
                 </button>
             </div>
-        </div>
-
+            <div class="col-md-2">
+                <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo me-1"></i>Reset
+                </a>
+            </div>
+        </form>
         <!-- Bảng danh sách nhà cung cấp -->
         <div class="table-responsive flex-grow-1">
             <table class="table table-hover mb-0">
@@ -75,10 +81,15 @@
                         <td colspan="6" class="text-center text-muted" style="height: 400px;">
                             <div class="d-flex flex-column justify-content-center align-items-center h-100">
                                 <i class="fas fa-truck fa-3x mb-3 opacity-50"></i>
+                                {% if search_query %}
+                                <h5>Không tìm thấy nhà cung cấp</h5>
+                                <p class="mb-3 text-center">Không có kết quả phù hợp với "<strong>{{ search_query }}</strong>"</p>
+                                {% else %}
                                 <h5>Chưa có nhà cung cấp nào</h5>
                                 <p class="mb-3 text-center">Hãy thêm nhà cung cấp đầu tiên để quản lý</p>
+                                {% endif %}
                                 <a href="{% url 'supplier_create' %}" class="btn btn-primary-custom">
-                                    <i class="fas fa-plus me-2"></i>Thêm nhà cung cấp đầu tiên
+                                    <i class="fas fa-plus me-2"></i>Thêm nhà cung cấp
                                 </a>
                             </div>
                         </td>
@@ -87,26 +98,9 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Phân trang -->
-        {% if suppliers %}
-        <div class="mt-auto pt-3">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center mb-0">
-                    <li class="page-item disabled"><a class="page-link" href="#">Trước</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Tiếp</a></li>
-                </ul>
-            </nav>
-        </div>
-        {% endif %}
-    </div>
-</div>
-
+     </div>
+ </div>
 <style>
-/* CSS để kéo dài bảng xuống hết trang */
 .table-custom {
     min-height: calc(100vh - 200px);
     display: flex;
@@ -129,12 +123,6 @@
     margin-bottom: 0 !important;
 }
 
-/* Đảm bảo tbody chiếm hết không gian */
-.table tbody {
-    height: 100%;
-}
-
-/* Header table với nền đen và chữ trắng */
 .table thead th {
     position: sticky;
     top: 0;
@@ -146,22 +134,6 @@
     padding: 12px 8px;
 }
 
-/* Đảm bảo chữ trắng cho tất cả thẻ th */
-.table thead th.text-white {
-    color: #ffffff !important;
-}
-
-/* Đảm bảo nền đen cho tất cả thẻ th */
-.table thead th.bg-dark {
-    background-color: #000000 !important;
-}
-
-/* Hover effect cho header */
-.table thead th:hover {
-    background: #333333 !important;
-}
-
-/* Responsive cho mobile */
 @media (max-width: 768px) {
     .table-custom {
         min-height: calc(100vh - 150px);
@@ -172,7 +144,6 @@
         font-size: 14px;
     }
 
-    /* Ẩn một số cột trên mobile */
     .table td:nth-child(4),
     .table th:nth-child(4),
     .table td:nth-child(5),
@@ -183,7 +154,6 @@
 </style>
 
 <script>
-// Khởi tạo tooltip
 document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
